@@ -17,8 +17,10 @@ warnings.filterwarnings("ignore", category=LangChainDeprecationWarning)
 KNOWLEDGE_BASE_DIR = Path("knowledge_base")
 INDEX_DIR = Path("data/faiss_index")
 EMBEDDING_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+EMBEDDING_ENCODE_KWARGS = {"normalize_embeddings": True}
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 150
+INDEX_BATCH_SIZE = 64
 
 
 def find_source_files(directory: Path) -> list[Path]:
@@ -93,10 +95,16 @@ def main() -> None:
     print(f"Создано чанков: {len(chunks)}")
 
     print(f"Загружается embedding-модель: {EMBEDDING_MODEL_NAME}")
-    embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
+    embeddings = HuggingFaceEmbeddings(
+        model_name=EMBEDDING_MODEL_NAME,
+        model_kwargs={"local_files_only": True},
+        encode_kwargs=EMBEDDING_ENCODE_KWARGS,
+    )
 
     print("Создаётся FAISS-индекс...")
-    vector_store = FAISS.from_documents(chunks, embeddings)
+    vector_store = FAISS.from_documents(chunks[:INDEX_BATCH_SIZE], embeddings)
+    for start in range(INDEX_BATCH_SIZE, len(chunks), INDEX_BATCH_SIZE):
+        vector_store.add_documents(chunks[start : start + INDEX_BATCH_SIZE])
 
     INDEX_DIR.mkdir(parents=True, exist_ok=True)
     vector_store.save_local(str(INDEX_DIR))

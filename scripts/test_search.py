@@ -13,6 +13,7 @@ warnings.filterwarnings("ignore", category=LangChainDeprecationWarning)
 
 INDEX_DIR = Path("data/faiss_index")
 EMBEDDING_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+EMBEDDING_ENCODE_KWARGS = {"normalize_embeddings": True}
 TOP_K = 3
 
 TEST_QUERIES = [
@@ -41,6 +42,7 @@ def load_index() -> FAISS:
     embeddings = HuggingFaceEmbeddings(
         model_name=EMBEDDING_MODEL_NAME,
         model_kwargs={"local_files_only": True},
+        encode_kwargs=EMBEDDING_ENCODE_KWARGS,
     )
     return FAISS.load_local(
         str(INDEX_DIR),
