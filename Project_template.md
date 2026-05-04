@@ -64,3 +64,51 @@ https://harrypotter.fandom.com/ru/wiki/Портал:Старт
 - `knowledge_base/` содержит тексты с заменёнными терминами;
 - `terms_map.json` содержит карту соответствий;
 - `scripts/replace_terms.py` выполняет автоматическую генерацию базы знаний.
+## Задание 3. Создание векторного индекса базы знаний
+
+Для создания векторного индекса использовалась embedding-модель:
+
+`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+
+Ссылка на модель:
+
+https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+
+Размерность эмбеддингов: 384.
+
+В качестве базы знаний использовалась папка:
+
+`knowledge_base/`
+
+В качестве векторной базы данных использовалась FAISS.
+
+Индекс сохраняется в папку:
+
+`data/faiss_index/`
+
+Для каждого чанка сохраняются метаданные:
+
+- `source` — путь к исходному файлу;
+- `title` — имя файла без расширения;
+- `chunk_id` — номер чанка внутри документа.
+
+Для разбиения документов на чанки используется `RecursiveCharacterTextSplitter` с параметрами:
+
+- `chunk_size=1000`;
+- `chunk_overlap=150`.
+
+Для запуска индексации:
+
+```bash
+python scripts/build_index.py
+```
+
+Для проверки поиска:
+
+```bash
+python scripts/test_search.py
+```
+
+Скрипт `scripts/build_index.py` читает документы из `knowledge_base/`, разбивает их на чанки, строит эмбеддинги и сохраняет FAISS-индекс в `data/faiss_index/`.
+
+Скрипт `scripts/test_search.py` загружает сохранённый индекс, выполняет тестовые поисковые запросы и выводит найденные чанки вместе с метаданными.
