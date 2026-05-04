@@ -1,4 +1,4 @@
-from langchain.schema import Document
+from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
@@ -27,7 +27,8 @@ db = FAISS.from_documents(docs, embedding_model)
 def ask_bot(question: str) -> str:
     results = db.similarity_search_with_score(question, k=3)
 
-    relevant_docs = [doc for doc, score in results if score < 1.1]
+    # берём только достаточно похожие
+    relevant_docs = [doc for doc, score in results if score < 0.5]
 
     if not relevant_docs:
         return "Я не знаю"
