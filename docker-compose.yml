@@ -1,0 +1,8 @@
+services:
+  rag-bot:
+    build: .
+    container_name: quantumforge-rag-bot
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
